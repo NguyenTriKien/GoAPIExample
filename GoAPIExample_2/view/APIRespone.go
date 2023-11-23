@@ -21,10 +21,11 @@ func Response() {
 	r.DELETE("/list/:id", controllers.DeleteListItem) // delete a to-do list base on id
 
 	//User crud
-	r.POST("/user", controllers.CreateUser)                       // create a user
-	r.GET("/user", controllers.FindAllUser)                       // find all user
-	r.GET("/user/todolist", controllers.FindAllUserWithTodoList)  // find all user with their to-do list
-	r.GET("/user/todolist/:id", controllers.FindUserTodoListById) // find a user with their to-do list
+	r.POST("/user/signup", controllers.CreateUser)                    // create a user
+	r.POST("/user/login", controllers.Login)                          // user login
+	r.GET("/user", controllers.FindAllUser)                           // find all user
+	r.GET("/user/todolist", controllers.FindAllUserWithTodoList)      // find all user with their to-do list
+	r.GET("/user/todolist/:userid", controllers.FindUserTodoListById) // find a user with their to-do list
 
 	err := r.Run()
 	if err != nil {

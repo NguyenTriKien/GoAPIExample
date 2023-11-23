@@ -27,7 +27,7 @@ type CreateToDoListInput struct {
 	Month    int       `json:"month" binding:"required"`
 	Day      int       `json:"day" binding:"required"`
 	CreateAt time.Time `json:"CreateAt"`
-	UserID   uint      `json:"userid"`
+	UserID   uint      `json:"userid" binding:"required"`
 }
 
 // POST /list

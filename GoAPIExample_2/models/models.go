@@ -20,8 +20,9 @@ type TodoList struct {
 }
 
 type User struct {
-	ID        uint       `gorm:"primary_key"`
+	ID        uint       `json:"userid" gorm:"primary_key"`
 	UserName  string     `json:"username"`
+	Password  string     `json:"password"`
 	TodoLists []TodoList `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
