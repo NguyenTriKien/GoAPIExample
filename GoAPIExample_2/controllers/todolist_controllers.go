@@ -27,6 +27,7 @@ type CreateToDoListInput struct {
 	Month    int       `json:"month" binding:"required"`
 	Day      int       `json:"day" binding:"required"`
 	CreateAt time.Time `json:"CreateAt"`
+	UserID   uint      `json:"userid"`
 }
 
 // POST /list
@@ -39,7 +40,7 @@ func CreateToDo(c *gin.Context) {
 		return
 	}
 
-	// Create book
+	// Create to do list
 	todoList := models.TodoList{
 		Title:  input.Title,
 		Status: input.Status,
@@ -50,7 +51,10 @@ func CreateToDo(c *gin.Context) {
 			time.Now().Minute(),
 			time.Now().Second(),
 			time.Now().Nanosecond(),
-			time.Local)}
+			time.Local),
+		UserID: input.UserID}
+
+	//Điều kiện kiểm tra thời hạn của to do list
 	createdAt := todoList.CreateAt
 
 	if createdAt.Equal(time.Now()) {

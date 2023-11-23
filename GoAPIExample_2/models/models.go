@@ -16,6 +16,13 @@ type TodoList struct {
 	Month    int    `json:"-"`
 	Day      int    `json:"-"`
 	CreateAt time.Time
+	UserID   uint
+}
+
+type User struct {
+	ID        uint       `gorm:"primary_key"`
+	UserName  string     `json:"username"`
+	TodoLists []TodoList `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 var DB *gorm.DB
@@ -28,7 +35,7 @@ func ConnectDatabase() {
 		panic("Failed to connect to database!")
 	}
 
-	err = database.AutoMigrate(&TodoList{})
+	err = database.AutoMigrate(&TodoList{}, &User{})
 	if err != nil {
 		return
 	}
