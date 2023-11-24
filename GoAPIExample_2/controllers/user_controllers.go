@@ -99,18 +99,17 @@ func CreateUser(c *gin.Context) {
 // /user/login
 func Login(c *gin.Context) {
 	var input UserInput
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	//Look up user request
 	var user models.User
 	if err := models.DB.First(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
 		return
 	}
-
 	//Compare sent in pass with saved user pass hash
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 
@@ -122,26 +121,54 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	//Generate a JWT token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
-	})
-
-	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
-
+	// Create JWT
+	token, err := createToken(user.ID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid to create token",
-		})
-
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
 		return
 	}
 
-	//sent it back
-	c.JSON(http.StatusOK, gin.H{
-		"token": tokenString,
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func createToken(userID uint) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID": userID,
+		"exp":    time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (24 hours)
 	})
 
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func getUserIDFromToken(c *gin.Context) (uint, bool) {
+	tokenString := c.GetHeader("Authorization")
+
+	if tokenString == "" {
+		return 0, false
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("SECRET")), nil
+	})
+
+	if err != nil || !token.Valid {
+		return 0, false
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, false
+	}
+
+	userID, ok := claims["userID"].(float64)
+	if !ok {
+		return 0, false
+	}
+
+	return uint(userID), true
 }

@@ -27,7 +27,7 @@ type CreateToDoListInput struct {
 	Month    int       `json:"month" binding:"required"`
 	Day      int       `json:"day" binding:"required"`
 	CreateAt time.Time `json:"CreateAt"`
-	UserID   uint      `json:"userid" binding:"required"`
+	UserID   uint      `json:"userid"`
 }
 
 // POST /list
@@ -37,6 +37,14 @@ func CreateToDo(c *gin.Context) {
 	var input CreateToDoListInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get UserID from token
+	userID, exists := getUserIDFromToken(c)
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
@@ -52,7 +60,7 @@ func CreateToDo(c *gin.Context) {
 			time.Now().Second(),
 			time.Now().Nanosecond(),
 			time.Local),
-		UserID: input.UserID}
+		UserID: userID}
 
 	//Điều kiện kiểm tra thời hạn của to do list
 	createdAt := todoList.CreateAt
