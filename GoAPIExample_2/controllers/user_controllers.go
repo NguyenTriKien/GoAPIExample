@@ -15,7 +15,7 @@ import (
 // Create user input model
 type UserInput struct {
 	ID       uint   `json:"userid"`
-	UserName string `json:"username" binding:"required"`
+	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -31,7 +31,7 @@ func FindAllUser(c *gin.Context) {
 	for _, user := range users {
 		userResponses = append(userResponses, UserInput{
 			ID:       user.ID,
-			UserName: user.UserName,
+			Username: user.Username,
 		})
 	}
 
@@ -81,7 +81,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to hash password"})
 	}
 
-	user := models.User{UserName: input.UserName, Password: string(hash)}
+	user := models.User{Username: input.Username, Password: string(hash)}
 
 	result := models.DB.Create(&user)
 
@@ -106,7 +106,7 @@ func Login(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := models.DB.First(&user).Error; err != nil {
+	if err := models.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
 		return
 	}
@@ -133,7 +133,7 @@ func Login(c *gin.Context) {
 
 func createToken(userID uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID": userID,
+		"userID": userID,                                // trả về id của user
 		"exp":    time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (24 hours)
 	})
 
