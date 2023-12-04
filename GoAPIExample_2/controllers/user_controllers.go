@@ -64,7 +64,6 @@ func FindUserTodoListById(c *gin.Context) {
 
 /*CREATE*/
 //POST "/user"
-
 // Create new userfunc
 func CreateUser(c *gin.Context) {
 	// Validate input

@@ -8,6 +8,7 @@ import (
 func init() {
 	initializers.LoadEnvVariables()
 }
+
 func main() {
 	view.Response()
 }

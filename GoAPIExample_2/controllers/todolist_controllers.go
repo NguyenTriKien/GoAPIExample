@@ -13,7 +13,7 @@ import (
 // GET /list
 // Get all list
 func FindAll(c *gin.Context) {
-	var todoList []models.TodoList
+	var todoList []models.TodoList // khai báo một todoList là môt slice vì todoList cần mở rộng để lưu trữ thêm nhiều todoList khác
 	models.DB.Find(&todoList)
 
 	c.JSON(http.StatusOK, gin.H{"data": todoList})
@@ -28,6 +28,11 @@ type CreateToDoListInput struct {
 	Day      int       `json:"day" binding:"required"`
 	CreateAt time.Time `json:"CreateAt"`
 	UserID   uint      `json:"userid"`
+}
+
+// check valid date of a month
+func daysInMonth(year int, month int) int {
+	return time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
 }
 
 // POST /list
@@ -45,6 +50,16 @@ func CreateToDo(c *gin.Context) {
 
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	if input.Month > 12 || input.Month <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid month input"})
+		return
+	}
+
+	if input.Day > 31 || input.Day <= 0 || input.Day > daysInMonth(input.Year, int(input.Month)) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid day input"})
 		return
 	}
 
@@ -83,7 +98,8 @@ func CreateToDo(c *gin.Context) {
 // /GET BY ID///
 // GET /lists/:id
 // Find a lists
-func FindListById(c *gin.Context) { // Get model if exist
+func FindListById(c *gin.Context) {
+	// Get model if exist
 	var todoList models.TodoList
 
 	if err := models.DB.Where("id = ?", c.Param("id")).First(&todoList).Error; err != nil {
