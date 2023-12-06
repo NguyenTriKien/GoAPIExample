@@ -48,20 +48,6 @@ func FindAllUserWithTodoList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
 
-// GET '/user/todolist/:id'
-// Get user to do list by user id
-func FindUserTodoListById(c *gin.Context) {
-	// Get model if exist
-	var user []models.User
-
-	if err := models.DB.Where("id = ?", c.Param("userid")).Preload("TodoLists").First(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": user})
-}
-
 /*CREATE*/
 //POST "/user"
 // Create new userfunc
@@ -130,18 +116,26 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-func createToken(userID uint) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID": userID,                                // trả về id của user
+func createToken(userID uint) (string, error) { // Đây là khai báo của hàm createToken.
+	//Hàm này nhận vào một tham số userID kiểu uint (số nguyên không dấu)
+	//và trả về một chuỗi và một lỗi.
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{ // Dòng này tạo ra một token JWT mới với một số yêu cầu (claims).
+		// Phương thức ký được sử dụng ở đây là HS256 (HMAC-SHA256).
+		//Các yêu cầu bao gồm userID và exp.
+
+		"userID": userID,                                // Đây là ID của người dùng, được trả về khi token được giải mã.
 		"exp":    time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (24 hours)
 	})
 
-	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET"))) // Dòng này ký token với một “bí mật” được lấy từ biến môi trường SECRET.
+	//Kết quả là một chuỗi token đã được ký và một lỗi (nếu có).
+
 	if err != nil {
 		return "", err
-	}
+	} //Đây là một khối kiểm tra lỗi. Nếu có lỗi xảy ra khi ký token (tức là err khác nil), hàm sẽ trả về một chuỗi rỗng và lỗi đó.
 
-	return tokenString, nil
+	return tokenString, nil //Nếu không có lỗi xảy ra, hàm sẽ trả về chuỗi token đã được ký và nil cho lỗi.
 }
 
 func getUserIDFromToken(c *gin.Context) (uint, bool) {
@@ -162,7 +156,8 @@ func getUserIDFromToken(c *gin.Context) (uint, bool) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return 0, false
-	}
+	} //Tóm lại, đoạn mã này giải mã các claims từ một token JWT
+	//và kiểm tra xem việc giải mã có thành công hay không. Nếu không, nó trả về 0 và false
 
 	userID, ok := claims["userID"].(float64)
 	if !ok {

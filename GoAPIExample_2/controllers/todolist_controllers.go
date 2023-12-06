@@ -12,12 +12,12 @@ import (
 // / GET ALL ///
 // GET /list
 // Get all list
-func FindAll(c *gin.Context) {
+/* func FindAll(c *gin.Context) {
 	var todoList []models.TodoList // khai báo một todoList là môt slice vì todoList cần mở rộng để lưu trữ thêm nhiều todoList khác
 	models.DB.Find(&todoList)
 
 	c.JSON(http.StatusOK, gin.H{"data": todoList})
-}
+} */
 
 // /CREATE///
 type CreateToDoListInput struct {
@@ -30,7 +30,7 @@ type CreateToDoListInput struct {
 	UserID   uint      `json:"userid"`
 }
 
-// check valid date of a month
+// check valid date of a month in a specific year
 func daysInMonth(year int, month int) int {
 	return time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
 }
@@ -95,10 +95,24 @@ func CreateToDo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": todoList})
 }
 
+// GET '/user/todolist/:id'
+// Get user to do list by user id
+func FindUserTodoListById(c *gin.Context) {
+	// Get model if exist
+	var user []models.User
+
+	if err := models.DB.Where("id = ?", c.Param("userid")).Preload("TodoLists").First(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": user})
+}
+
 // /GET BY ID///
 // GET /lists/:id
 // Find a lists
-func FindListById(c *gin.Context) {
+/* func FindListById(c *gin.Context) {
 	// Get model if exist
 	var todoList models.TodoList
 
@@ -109,7 +123,7 @@ func FindListById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": todoList})
 }
-
+*/
 ///UPDATE///
 
 type UpdateToDoListInput struct {

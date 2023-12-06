@@ -15,8 +15,8 @@ func Response() {
 
 	//To do list crud
 	//r.Use(controllers.Validate)                       // use validate
-	r.GET("/list", controllers.FindAll)               // find all to-do list
-	r.GET("/list/:id", controllers.FindListById)      // find a list by id
+	//r.GET("/list", controllers.FindAll)               // find all to-do list
+	//r.GET("/list/:id", controllers.FindListById)      // find a list by id
 	r.POST("/list", controllers.CreateToDo)           // create a list
 	r.PUT("/list/:id", controllers.UpdateToDoList)    // update a to-do list base on id
 	r.DELETE("/list/:id", controllers.DeleteListItem) // delete a to-do list base on id
